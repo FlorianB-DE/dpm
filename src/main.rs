@@ -1,47 +1,40 @@
-use std::{env, process::Command, string::FromUtf8Error};
+use std::{fs, env, error::Error, io, path::PathBuf, process, str::FromStr};
 
-fn main() -> Result<()> {
-    let path = env::current_dir().unwrap();
-    println!("The current directory is {}", path.display());
+fn main() -> Result<(), Error> {
+    let _path = env::current_dir()?;
 
-    let docker = find_docker()?;
+    let _docker = find_docker()?;
 
-    get_arguments();
+    let _args: Vec<String> = env::args().collect();
+
+    println!(
+        "docker at: {}, pwd: {}, exec: {}",
+        _docker.display(),
+        _path.display(),
+        _args[0]
+    );
+
+    let _docker_output = exec_cmd(_docker, Vec::new())?;
+    // println!("{:?}", String::from_utf8(docker_output.stderr).unwrap());
 
     Ok(())
 }
 
-// annotation code written by @Tomyk9991 on Twitch
+fn find_docker() -> Result<PathBuf, Box<dyn Error>> {
+    let output = exec_shell_cmd("which docker".to_string())?;
 
-#[derive(Debug)]
-enum DockerNotFoundError { 
-    Utf8(FromUtf8Error)
-}
- 
-impl From<FromUtf8Error> for DockerNotFoundError {
-    fn from(s: FromUtf8Error) -> Self {
-        Self::Utf8(s)
-    }
-}
- 
-fn find_docker() -> Result<String, DockerNotFoundError> {
-
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg("which docker")
-        .output()
-        .expect("failed to execute process");
-    Ok(String::from_utf8(output.stdout)?)
+    let mut path = PathBuf::new();
+    path.push(String::from_utf8(output.stdout)?);
+    Ok(path)
 }
 
-fn get_arguments() {
-    let args: Vec<String> = env::args().collect();
+fn exec_cmd(program: PathBuf, args: Vec<String>) -> io::Result<process::Output> {
+    process::Command::new(program.to_str().unwrap()).args(args).output()
+}
 
-    // The first argument is the path that was used to call the program.
-    println!("My path is {}.", args[0]);
-
-    // The rest of the arguments are the passed command line parameters.
-    // Call the program like this:
-    //   $ ./args arg1 arg2
-    println!("I got {:?} arguments: {:?}.", args.len() - 1, &args[1..]);
+fn exec_shell_cmd(cmd: String) -> Result<process::Output, Box<dyn Error>> {
+    Ok(exec_cmd(
+        PathBuf::from_str("/bin/sh")?,
+        vec!["-c".to_string(), cmd],
+    )?)
 }
