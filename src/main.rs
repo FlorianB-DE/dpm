@@ -1,6 +1,7 @@
-#[macro_use] mod macros;
-mod program_execution;
+#[macro_use]
+mod macros;
 mod cli_lib;
+mod program_execution;
 
 use std::{env, path::PathBuf};
 
@@ -32,10 +33,15 @@ fn main() -> Result<(), Errors> {
         return Ok(());
     }
 
-    let _docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")]).or_else(|e| {
-        eprintln!("error while trying to execute {}: \n {}", docker.display(), e);
-        Err(Errors::IOError)
-    })?;
+    let _docker_output =
+        exec_cmd(&docker, vec![str!("run"), str!("hello-world")]).or_else(|e| {
+            eprintln!(
+                "error while trying to execute {}: \n {}",
+                docker.display(),
+                e
+            );
+            Err(Errors::IOError)
+        })?;
     println!("{}", String::from_utf8(_docker_output.stdout).unwrap());
 
     Ok(())

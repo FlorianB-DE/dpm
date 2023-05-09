@@ -17,7 +17,7 @@ fn get_version(docker: &PathBuf) -> String {
 
 /// returns true when the program should exit
 pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> bool {
-let mut options: Vec<&str> = Vec::new();
+    let mut options: Vec<&str> = Vec::new();
 
     for i in 1..args.len() {
         if !args[i].starts_with("-") {
@@ -26,7 +26,6 @@ let mut options: Vec<&str> = Vec::new();
 
         options.push(&args[i]);
     }
-
 
     if options.contains(&"-v") || options.contains(&"--version") {
         print!("{}", get_version(docker));
@@ -43,7 +42,7 @@ let mut options: Vec<&str> = Vec::new();
 
 pub fn usage() {
     print!(
-"Usage: dpm [OPTIONS] COMMAND [ARGS...]
+        "Usage: dpm [OPTIONS] COMMAND [ARGS...]
 
 Docker Package Manager - Manage locally installed programs with Docker containers.
 

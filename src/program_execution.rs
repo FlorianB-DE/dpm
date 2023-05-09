@@ -10,8 +10,5 @@ where
 
 #[inline]
 pub fn exec_shell_cmd(cmd: String) -> io::Result<process::Output> {
-    exec_cmd(
-        "/bin/sh",
-        vec!["-c".to_string(), cmd],
-    )
+    exec_cmd("/bin/sh", vec!["-c".to_string(), cmd])
 }
