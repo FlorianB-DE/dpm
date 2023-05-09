@@ -1,6 +1,13 @@
+mod install;
+mod options;
+
+use std::error::Error;
 use std::path::PathBuf;
 
+use crate::Errors;
 use crate::program_execution::exec_cmd;
+
+use self::options::get_options;
 
 fn get_version(docker: &PathBuf) -> String {
     let default = str!("failed to get version from Docker daemon");
@@ -15,29 +22,21 @@ fn get_version(docker: &PathBuf) -> String {
     )
 }
 
-/// returns true when the program should exit
-pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> bool {
-    let mut options: Vec<&str> = Vec::new();
-
-    for i in 1..args.len() {
-        if !args[i].starts_with("-") {
-            break;
-        }
-
-        options.push(&args[i]);
-    }
+/// returns None when the program should exit
+pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> Option<usize> {
+    let options = get_options(args, 1);
 
     if options.contains(&"-v") || options.contains(&"--version") {
         print!("{}", get_version(docker));
-        return true;
+        return None;
     }
 
     if options.contains(&"-h") || options.contains(&"--help") {
         usage();
-        return true;
+        return None;
     }
-
-    false
+    // there are currently two options. u8 has the opportunity to contain 255...
+    Some(options.len() + 1)
 }
 
 pub fn usage() {
@@ -59,4 +58,23 @@ Commands:
 all available programs are also considered valid commands
 "
     )
+}
+
+pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Box<dyn Error>> {
+    let cmd = match args.get(cmd_index) {
+        Some(i) => i,
+        None => {
+            usage();
+            return Ok(());
+        }
+    };
+
+    match args[cmd_index].as_str() {
+        "install" => install::run(args, cmd_index + 1, docker),
+        _ => {
+            let _docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
+            println!("{}", String::from_utf8(_docker_output.stdout).unwrap());
+            return Ok(());
+        }
+    }
 }

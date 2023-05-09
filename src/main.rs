@@ -1,13 +1,15 @@
 #[macro_use]
 mod macros;
-mod cli_lib;
+mod cli;
 mod program_execution;
 
 use std::{env, path::PathBuf};
 
 use program_execution::{exec_cmd, exec_shell_cmd};
 
-use cli_lib::{filter_options, usage};
+use cli::{filter_options, usage};
+
+use crate::cli::match_command;
 
 #[derive(Debug)]
 enum Errors {
@@ -23,26 +25,19 @@ fn main() -> Result<(), Errors> {
     let docker = find_docker().or(Err(Errors::DockerNotFound))?;
     let args: Vec<String> = env::args().collect();
 
-    if args.len() == 1 {
+    if args.len() < 2 {
         // can never be zero due to the fact that the first element is always the program itself
         usage();
         return Ok(());
     }
 
-    if filter_options(&args, &docker) {
-        return Ok(());
-    }
+    // when filter_options returns none, the program should exit
+    let commands_index = match filter_options(&args, &docker) {
+        Some(i) => i,
+        None => return Ok(()),
+    };
 
-    let _docker_output =
-        exec_cmd(&docker, vec![str!("run"), str!("hello-world")]).or_else(|e| {
-            eprintln!(
-                "error while trying to execute {}: \n {}",
-                docker.display(),
-                e
-            );
-            Err(Errors::IOError)
-        })?;
-    println!("{}", String::from_utf8(_docker_output.stdout).unwrap());
+    match_command(&args, commands_index, &docker);
 
     Ok(())
 }
