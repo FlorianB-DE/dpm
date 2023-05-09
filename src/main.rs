@@ -5,7 +5,7 @@ mod program_execution;
 
 use std::{env, path::PathBuf};
 
-use program_execution::{exec_cmd, exec_shell_cmd};
+use program_execution::exec_shell_cmd;
 
 use cli::{filter_options, usage};
 
@@ -17,7 +17,7 @@ enum Errors {
     DockerNotFound,
     CommandExecutionFailed,
     STDINError,
-    IOError,
+    // IOError,
 }
 
 fn main() -> Result<(), Errors> {
@@ -37,7 +37,7 @@ fn main() -> Result<(), Errors> {
         None => return Ok(()),
     };
 
-    match_command(&args, commands_index, &docker);
+    match_command(&args, commands_index, &docker).unwrap();
 
     Ok(())
 }
