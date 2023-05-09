@@ -4,7 +4,6 @@ mod options;
 use std::error::Error;
 use std::path::PathBuf;
 
-use crate::Errors;
 use crate::program_execution::exec_cmd;
 
 use self::options::get_options;
@@ -60,7 +59,11 @@ all available programs are also considered valid commands
     )
 }
 
-pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Box<dyn Error>> {
+pub fn match_command(
+    args: &Vec<String>,
+    cmd_index: usize,
+    docker: &PathBuf,
+) -> Result<(), Box<dyn Error>> {
     let cmd = match args.get(cmd_index) {
         Some(i) => i,
         None => {
@@ -69,12 +72,20 @@ pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> 
         }
     };
 
-    match args[cmd_index].as_str() {
+    match cmd.as_str() {
         "install" => install::run(args, cmd_index + 1, docker),
-        _ => {
+        "hello" => {
             let _docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
-            println!("{}", String::from_utf8(_docker_output.stdout).unwrap());
+            println!("{}", String::from_utf8(_docker_output.stdout)?);
             return Ok(());
+        }
+        _ => {
+            println!(
+                "command '{}' not found. Use 
+    dpm --help 
+to check usage", cmd
+            );
+            Ok(())
         }
     }
 }
