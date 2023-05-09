@@ -1,9 +1,22 @@
-use std::{fs, env, error::Error, io, path::PathBuf, process, str::FromStr};
+mod program_execution;
 
-fn main() -> Result<(), Error> {
-    let _path = env::current_dir()?;
+use std::{env, path::PathBuf};
 
-    let _docker = find_docker()?;
+use program_execution::{exec_cmd, exec_shell_cmd};
+
+#[derive(Debug)]
+enum Errors {
+    CouldNotGetPath,
+    DockerNotFound,
+    CommandExecutionFailed,
+    STDINError,
+    Unknown,
+}
+
+fn main() -> Result<(), Errors> {
+    let _path = env::current_dir().or(Err(Errors::CouldNotGetPath))?;
+
+    let _docker = find_docker().or(Err(Errors::DockerNotFound))?;
 
     let _args: Vec<String> = env::args().collect();
 
@@ -14,27 +27,23 @@ fn main() -> Result<(), Error> {
         _args[0]
     );
 
-    let _docker_output = exec_cmd(_docker, Vec::new())?;
-    // println!("{:?}", String::from_utf8(docker_output.stderr).unwrap());
+    let _docker_output = exec_cmd(_docker, Vec::new()).or_else(|e| {
+        eprintln!("{e}");
+
+        Err(Errors::Unknown)
+    })?;
+    println!("{}", String::from_utf8(_docker_output.stderr).unwrap());
 
     Ok(())
 }
 
-fn find_docker() -> Result<PathBuf, Box<dyn Error>> {
-    let output = exec_shell_cmd("which docker".to_string())?;
+fn find_docker() -> Result<PathBuf, Errors> {
+    let output =
+        exec_shell_cmd("which docker".to_string()).or(Err(Errors::CommandExecutionFailed))?;
 
     let mut path = PathBuf::new();
-    path.push(String::from_utf8(output.stdout)?);
+    let path_string = String::from_utf8(output.stdout).or(Err(Errors::STDINError))?;
+
+    path.push(path_string.trim());
     Ok(path)
-}
-
-fn exec_cmd(program: PathBuf, args: Vec<String>) -> io::Result<process::Output> {
-    process::Command::new(program.to_str().unwrap()).args(args).output()
-}
-
-fn exec_shell_cmd(cmd: String) -> Result<process::Output, Box<dyn Error>> {
-    Ok(exec_cmd(
-        PathBuf::from_str("/bin/sh")?,
-        vec!["-c".to_string(), cmd],
-    )?)
 }
