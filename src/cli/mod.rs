@@ -3,7 +3,7 @@ mod options;
 
 use std::path::PathBuf;
 
-use crate::program_execution::{exec_cmd, string_from_uft8};
+use crate::program_execution::{exec_cmd, print_output};
 use crate::Errors;
 
 use self::options::get_options;
@@ -39,12 +39,6 @@ pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> Option<usize> {
     }
 
     Some(options.len() + 1)
-}
-
-#[inline]
-fn print_output(output: Vec<u8>) -> Result<(), Errors> {
-    println!("{}", string_from_uft8(output)?);
-    Ok(())
 }
 
 fn get_version(docker: &PathBuf) -> String {
