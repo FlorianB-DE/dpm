@@ -39,9 +39,7 @@ fn main() -> Result<(), Errors> {
         None => return Ok(()),
     };
 
-    match_command(&args, commands_index, &docker).unwrap();
-
-    Ok(())
+    match_command(&args, commands_index, &docker)
 }
 
 fn find_docker() -> Result<PathBuf, Errors> {
