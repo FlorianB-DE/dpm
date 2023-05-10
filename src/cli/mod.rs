@@ -8,17 +8,20 @@ use crate::Errors;
 
 use self::options::get_options;
 
-fn get_version(docker: &PathBuf) -> String {
-    let default = str!("failed to get version from Docker daemon");
-    let docker_version = match exec_cmd(docker, vec![str!("--version")]) {
-        Ok(output) => String::from_utf8(output.stdout).unwrap_or(default),
-        Err(_) => default,
+pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
+    let cmd = match args.get(cmd_index) {
+        Some(i) => i,
+        None => {
+            print!("{}", usage());
+            return Ok(());
+        }
     };
-    format!(
-        "dpm: {}\ndocker: {}",
-        env!("CARGO_PKG_VERSION"),
-        docker_version
-    )
+
+    match cmd.as_str() {
+        "install" => install::run(args, cmd_index + 1, docker),
+        "hello" => run_hello(docker),
+        _ => command_not_found(cmd),
+    }
 }
 
 /// returns None when the program should exit
@@ -38,24 +41,28 @@ pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> Option<usize> {
     Some(options.len() + 1)
 }
 
-pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
-    let cmd = match args.get(cmd_index) {
-        Some(i) => i,
-        None => {
-            print!("{}", usage());
-            return Ok(());
-        }
-    };
-
-    match cmd.as_str() {
-        "install" => install::run(args, cmd_index + 1, docker),
-        "hello" => run_hello(docker),
-        _ => command_not_found(cmd),
-    }
-}
-
+#[inline]
 fn print_output(output: Vec<u8>) -> Result<(), Errors> {
     println!("{}", string_from_uft8(output)?);
+    Ok(())
+}
+
+fn get_version(docker: &PathBuf) -> String {
+    let default = str!("failed to get version from Docker daemon");
+    let docker_version = match exec_cmd(docker, vec![str!("--version")]) {
+        Ok(output) => String::from_utf8(output.stdout).unwrap_or(default),
+        Err(_) => default,
+    };
+    format!(
+        "dpm: {}\ndocker: {}",
+        env!("CARGO_PKG_VERSION"),
+        docker_version
+    )
+}
+
+fn run_hello(docker: &PathBuf) -> Result<(), Errors> {
+    let docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
+    print_output(docker_output.stdout)?;
     Ok(())
 }
 
@@ -66,12 +73,6 @@ fn command_not_found(cmd: &String) -> Result<(), Errors> {
 to check usage",
         cmd
     );
-    Ok(())
-}
-
-fn run_hello(docker: &PathBuf) -> Result<(), Errors> {
-    let docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
-    print_output(docker_output.stdout)?;
     Ok(())
 }
 
