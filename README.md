@@ -1,6 +1,6 @@
 # DPM - Docker Package Manager
 
-[![Build](https://github.com/FlorianB-DE/dpm/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/FlorianB-DE/dpm/actions/workflows/rust.yml)
+[![Build](https://github.com/FlorianB-DE/dpm/actions/workflows/rust.yml/badge.svg?branch=main&event=push)](https://github.com/FlorianB-DE/dpm/actions/workflows/rust.yml)
 
 This is dpm! Your new way of running programs. 
 
