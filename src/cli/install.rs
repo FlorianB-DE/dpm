@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use crate::{program_execution::exec_cmd, Errors};
+use crate::{program_execution::{exec_cmd, print_output}, Errors};
 
 pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     if args.len() == cmd_index {
@@ -41,8 +41,7 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
     };
 
     let pull = exec_cmd(docker, vec![str!("pull"), program])?;
-    print!("{}", String::from_utf8(pull.stderr).or(Err(Errors::UTF8Error))?);
-    Ok(())
+    print_output(pull.stdout)
 }
 
 fn handle_options(
