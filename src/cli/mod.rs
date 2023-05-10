@@ -1,10 +1,10 @@
 mod install;
 mod options;
 
-use std::error::Error;
 use std::path::PathBuf;
 
-use crate::program_execution::exec_cmd;
+use crate::program_execution::{exec_cmd, string_from_uft8};
+use crate::Errors;
 
 use self::options::get_options;
 
@@ -31,15 +31,52 @@ pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> Option<usize> {
     }
 
     if options.contains(&"-h") || options.contains(&"--help") {
-        usage();
+        print!("{}", usage());
         return None;
     }
-    // there are currently two options. u8 has the opportunity to contain 255...
+
     Some(options.len() + 1)
 }
 
-pub fn usage() {
-    print!(
+pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
+    let cmd = match args.get(cmd_index) {
+        Some(i) => i,
+        None => {
+            print!("{}", usage());
+            return Ok(());
+        }
+    };
+
+    match cmd.as_str() {
+        "install" => install::run(args, cmd_index + 1, docker),
+        "hello" => run_hello(docker),
+        _ => command_not_found(cmd),
+    }
+}
+
+fn print_output(output: Vec<u8>) -> Result<(), Errors> {
+    println!("{}", string_from_uft8(output)?);
+    Ok(())
+}
+
+fn command_not_found(cmd: &String) -> Result<(), Errors> {
+    println!(
+        "command '{}' not found. Use 
+    dpm --help 
+to check usage",
+        cmd
+    );
+    Ok(())
+}
+
+fn run_hello(docker: &PathBuf) -> Result<(), Errors> {
+    let docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
+    print_output(docker_output.stdout)?;
+    Ok(())
+}
+
+pub fn usage() -> String {
+    str!(
         "Usage: dpm [OPTIONS] COMMAND [ARGS...]
 
 Docker Package Manager - Manage locally installed programs with Docker containers.
@@ -57,35 +94,4 @@ Commands:
 all available programs are also considered valid commands
 "
     )
-}
-
-pub fn match_command(
-    args: &Vec<String>,
-    cmd_index: usize,
-    docker: &PathBuf,
-) -> Result<(), Box<dyn Error>> {
-    let cmd = match args.get(cmd_index) {
-        Some(i) => i,
-        None => {
-            usage();
-            return Ok(());
-        }
-    };
-
-    match cmd.as_str() {
-        "install" => install::run(args, cmd_index + 1, docker),
-        "hello" => {
-            let _docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
-            println!("{}", String::from_utf8(_docker_output.stdout)?);
-            return Ok(());
-        }
-        _ => {
-            println!(
-                "command '{}' not found. Use 
-    dpm --help 
-to check usage", cmd
-            );
-            Ok(())
-        }
-    }
 }

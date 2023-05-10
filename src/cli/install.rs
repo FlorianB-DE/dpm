@@ -1,8 +1,8 @@
-use std::{collections::HashMap, error::Error, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf};
 
-use crate::program_execution::exec_cmd;
+use crate::{program_execution::exec_cmd, Errors};
 
-pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Box<dyn Error>> {
+pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     if args.len() == cmd_index {
         usage();
         return Ok(());
@@ -15,11 +15,16 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
     match args.get(cmd_index) {
         Some(o) => {
             if o.starts_with("-") {
-                added_index = handle_options(args, cmd_index, &mut options);
+                added_index = match handle_options(args, cmd_index, &mut options) {
+                    Some(i) => i,
+                    None => {
+                        return Ok(());
+                    }
+                };
             }
         }
         None => {
-            usage();
+            eprintln!("{}", usage());
             return Ok(());
         }
     }
@@ -29,17 +34,22 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
     let program = match args.get(program_indices) {
         Some(p) => format!("{}:{}", p, options.get("tag").unwrap_or(&str!("latest"))),
         None => {
-            usage();
+            eprintln!("missing argument 'program'.\nUsage:");
+            eprintln!("{}", usage());
             return Ok(());
         }
     };
 
     let pull = exec_cmd(docker, vec![str!("pull"), program])?;
-    print!("{}", String::from_utf8(pull.stderr)?);
+    print!("{}", String::from_utf8(pull.stderr).or(Err(Errors::UTF8Error))?);
     Ok(())
 }
 
-fn handle_options(args: &Vec<String>, cmd_index: usize, options: &mut HashMap<&str, String>) -> usize {
+fn handle_options(
+    args: &Vec<String>,
+    cmd_index: usize,
+    options: &mut HashMap<&str, String>,
+) -> Option<usize> {
     let mut added_indices = 1;
     match args[cmd_index].as_str() {
         "--tag" | "-t" => {
@@ -53,13 +63,21 @@ fn handle_options(args: &Vec<String>, cmd_index: usize, options: &mut HashMap<&s
                 added_indices += 1;
             }
         }
-        _ => {}
+        "-h" | "--help" => {
+            println!("{}", usage());
+            return None;
+        }
+        _ => {
+            eprintln!("unknown option '{}'", args[cmd_index]);
+            return None;
+        }
     }
-    added_indices
+    Some(added_indices)
 }
 
-fn usage() {
-    println!(
+#[inline]
+fn usage() -> String {
+    str!(
         "dpm install [options] program
         
 Options:

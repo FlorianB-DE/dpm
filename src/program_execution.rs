@@ -1,14 +1,34 @@
 use std::{ffi, io, process};
 
+use crate::Errors;
+
 #[inline]
-pub fn exec_cmd<S>(program: S, args: Vec<String>) -> io::Result<process::Output>
+pub fn exec_shell_cmd(cmd: String) -> Result<process::Output, Errors> {
+    exec_cmd("/bin/sh", vec!["-c".to_string(), cmd])
+}
+
+pub fn exec_cmd<S>(program: S, args: Vec<String>) -> Result<process::Output, Errors>
 where
     S: AsRef<ffi::OsStr>,
 {
-    process::Command::new(program).args(args).output()
+    match process::Command::new(&program).args(args).output() {
+        Ok(o) => Ok(o),
+        Err(e) => print_error(&program, e),
+    }
 }
 
-#[inline]
-pub fn exec_shell_cmd(cmd: String) -> io::Result<process::Output> {
-    exec_cmd("/bin/sh", vec!["-c".to_string(), cmd])
+pub fn string_from_uft8(str: Vec<u8>) -> Result<String, Errors> {
+    String::from_utf8(str).or(Err(Errors::UTF8Error))
+}
+
+fn print_error<S>(program: &S, e: io::Error) -> Result<process::Output, Errors>
+where
+    S: AsRef<ffi::OsStr>,
+{
+    eprintln!(
+        "During execution of '{}', the following error occured:\n{}",
+        program.as_ref().to_str().unwrap_or("unknown"),
+        e
+    );
+    Err(Errors::CommandExecutionFailed)
 }

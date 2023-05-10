@@ -5,19 +5,21 @@ mod program_execution;
 
 use std::{env, path::PathBuf};
 
-use program_execution::exec_shell_cmd;
+use program_execution::{exec_shell_cmd, string_from_uft8};
 
 use cli::{filter_options, usage};
 
 use crate::cli::match_command;
 
 #[derive(Debug)]
-enum Errors {
+pub enum Errors {
     CouldNotGetPath,
     DockerNotFound,
     CommandExecutionFailed,
     STDINError,
-    // IOError,
+    IOError,
+    InvalidOption,
+    UTF8Error,
 }
 
 fn main() -> Result<(), Errors> {
@@ -43,10 +45,10 @@ fn main() -> Result<(), Errors> {
 }
 
 fn find_docker() -> Result<PathBuf, Errors> {
-    let output = exec_shell_cmd(str!("which docker")).or(Err(Errors::CommandExecutionFailed))?;
+    let output = exec_shell_cmd(str!("which docker"))?;
 
     let mut path = PathBuf::new();
-    let path_string = String::from_utf8(output.stdout).or(Err(Errors::STDINError))?;
+    let path_string = string_from_uft8(output.stdout)?;
 
     path.push(path_string.trim());
     Ok(path)
