@@ -1,77 +1,48 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use crate::{program_execution::{exec_cmd, print_output}, Errors};
+use crate::{
+    program_execution::{exec_cmd, print_output},
+    Errors,
+};
+
+use super::options::handle_options;
 
 pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
-    if args.len() == cmd_index {
-        usage();
-        return Ok(());
-    }
-
     let mut options: HashMap<&str, String> = HashMap::new();
     let mut added_index = 0;
     options.insert("tag", str!("latest"));
 
-    match args.get(cmd_index) {
-        Some(o) => {
-            if o.starts_with("-") {
-                added_index = match handle_options(args, cmd_index, &mut options) {
-                    Some(i) => i,
-                    None => {
-                        return Ok(());
-                    }
-                };
+    loop {
+        let current_arg = args.get(cmd_index + added_index).ok_or_else(missing_program)?;
+
+        if !current_arg.starts_with("-") {
+            break;
+        }
+
+        added_index += match handle_options(args, cmd_index, &mut options, &usage()) {
+            Some(i) => i,
+            None => {
+                return Err(Errors::InvalidOption);
             }
-        }
-        None => {
-            eprintln!("{}", usage());
-            return Ok(());
-        }
+        };
     }
 
     let program_indices = cmd_index + added_index;
 
     let program = match args.get(program_indices) {
         Some(p) => format!("{}:{}", p, options.get("tag").unwrap_or(&str!("latest"))),
-        None => {
-            eprintln!("missing argument 'program'.\nUsage:");
-            eprintln!("{}", usage());
-            return Ok(());
-        }
+        None => return Err(missing_program())
+        
     };
 
     let pull = exec_cmd(docker, vec![str!("pull"), program])?;
     print_output(pull.stdout)
 }
 
-fn handle_options(
-    args: &Vec<String>,
-    cmd_index: usize,
-    options: &mut HashMap<&str, String>,
-) -> Option<usize> {
-    let mut added_indices = 1;
-    match args[cmd_index].as_str() {
-        "--tag" | "-t" => {
-            if cmd_index + added_indices < args.len() {
-                options.insert(
-                    "tag",
-                    args.get(cmd_index + added_indices)
-                        .unwrap_or(&str!("latest"))
-                        .to_owned(),
-                );
-                added_indices += 1;
-            }
-        }
-        "-h" | "--help" => {
-            println!("{}", usage());
-            return None;
-        }
-        _ => {
-            eprintln!("unknown option '{}'", args[cmd_index]);
-            return None;
-        }
-    }
-    Some(added_indices)
+fn missing_program() -> Errors {
+    eprintln!("missing argument 'program'.\nUsage:");
+    eprintln!("{}", usage());
+    Errors::MissingArgument
 }
 
 #[inline]

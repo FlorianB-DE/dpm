@@ -1,4 +1,4 @@
-use std::{ffi, io, process};
+use std::{ffi, io, process::{self, Stdio}};
 
 use crate::Errors;
 
@@ -11,7 +11,8 @@ pub fn exec_cmd<S>(program: S, args: Vec<String>) -> Result<process::Output, Err
 where
     S: AsRef<ffi::OsStr>,
 {
-    match process::Command::new(&program).args(args).output() {
+    let out = Stdio::piped();
+    match process::Command::new(&program).stdout(out).args(args).output() {
         Ok(o) => Ok(o),
         Err(e) => print_error(&program, e),
     }
@@ -32,7 +33,7 @@ where
     S: AsRef<ffi::OsStr>,
 {
     eprintln!(
-        "During execution of '{}', the following error occured:\n{}",
+        "During execution of '{}', the following error occured:\n{}\n",
         program.as_ref().to_str().unwrap_or("unknown"),
         e
     );
