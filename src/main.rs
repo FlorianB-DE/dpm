@@ -20,6 +20,7 @@ pub enum Errors {
     IOError,
     InvalidOption,
     UTF8Error,
+    MissingArgument,
 }
 
 fn main() -> Result<(), Errors> {
@@ -28,8 +29,7 @@ fn main() -> Result<(), Errors> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        // can never be zero due to the fact that the first element is always the program itself
-        usage();
+        println!("{}", usage());
         return Ok(());
     }
 
