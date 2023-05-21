@@ -1,16 +1,17 @@
 mod install;
 mod options;
+mod configuration_manager;
 
 use std::path::PathBuf;
 
 use crate::{
     program_execution::{exec_cmd, print_output},
-    Errors,
+    Errors
 };
 
 use self::options::{handle_options, OptionHandler};
 
-pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
+pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     let cmd = match args.get(cmd_index) {
         Some(i) => i,
         None => {

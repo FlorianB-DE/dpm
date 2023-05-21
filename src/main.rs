@@ -6,7 +6,7 @@ mod program_execution;
 use std::{env, path::PathBuf};
 
 use program_execution::{exec_shell_cmd, string_from_uft8};
-use cli::{filter_options, usage, match_command};
+use cli::{filter_options, usage};
 
 #[derive(Debug)]
 pub enum Errors {
@@ -42,7 +42,7 @@ fn main() -> Result<(), Errors> {
         }
     };
 
-    match_command(&args, args_added_indecies + 1, &docker)
+    cli::run(&args, args_added_indecies + 1, &docker)
 }
 
 fn find_docker() -> Result<PathBuf, Errors> {
