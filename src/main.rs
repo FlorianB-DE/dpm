@@ -6,10 +6,7 @@ mod program_execution;
 use std::{env, path::PathBuf};
 
 use program_execution::{exec_shell_cmd, string_from_uft8};
-
-use cli::{filter_options, usage};
-
-use crate::cli::match_command;
+use cli::{filter_options, usage, match_command};
 
 #[derive(Debug)]
 pub enum Errors {
@@ -34,12 +31,18 @@ fn main() -> Result<(), Errors> {
     }
 
     // when filter_options returns none, the program should exit
-    let commands_index = match filter_options(&args, &docker) {
-        Some(i) => i,
-        None => return Ok(()),
+    let args_added_indecies = match filter_options(&args, &docker) {
+        Ok(p) => match p {
+            Some(u) => u,
+            None => return Ok(()),
+        },
+        Err(_) => {
+            println!("{}", usage());
+            return Err(Errors::MissingArgument)
+        }
     };
 
-    match_command(&args, commands_index, &docker)
+    match_command(&args, args_added_indecies + 1, &docker)
 }
 
 fn find_docker() -> Result<PathBuf, Errors> {

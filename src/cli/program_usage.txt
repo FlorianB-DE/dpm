@@ -1,0 +1,15 @@
+Usage: dpm [OPTIONS] COMMAND [ARGS...]
+
+Docker Package Manager - Manage locally installed programs with Docker containers.
+
+Options:
+  -h, --help     Show this help message and exit.
+  -v, --version  Show the version number and exit.
+
+Commands:
+  install       Install a program as a Docker container.
+  list          List all installed programs.
+  remove        Remove a program and its associated Docker container.
+  update        Update a program's Docker container to the latest version.
+
+all available programs are also considered valid commands

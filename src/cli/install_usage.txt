@@ -1,0 +1,6 @@
+dpm install [options] program
+
+Pulls a container and locks in its version in dpm config
+        
+Options:
+    -t, --tag: specify image tag defaults to: '--tag latest'

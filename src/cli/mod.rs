@@ -3,10 +3,12 @@ mod options;
 
 use std::path::PathBuf;
 
-use crate::program_execution::{exec_cmd, print_output};
-use crate::Errors;
+use crate::{
+    program_execution::{exec_cmd, print_output},
+    Errors,
+};
 
-use self::options::get_options;
+use self::options::{handle_options, OptionHandler};
 
 pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     let cmd = match args.get(cmd_index) {
@@ -25,20 +27,19 @@ pub fn match_command(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> 
 }
 
 /// returns None when the program should exit
-pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> Option<usize> {
-    let options = get_options(args, 1);
+pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> Result<Option<usize>, Errors> {
+    let version_print = get_version(docker);
 
-    if options.contains(&"-v") || options.contains(&"--version") {
-        print!("{}", get_version(docker));
-        return None;
-    }
-
-    if options.contains(&"-h") || options.contains(&"--help") {
-        print!("{}", usage());
-        return None;
-    }
-
-    Some(options.len() + 1)
+    handle_options(args, &vec![
+        OptionHandler::new(vec!["-v", "--version"], Default::default(), &mut move |_| {
+            print!("{}", version_print);
+            Ok(false)
+        }),
+        OptionHandler::new(vec!["-h", "--help"], Default::default(), &mut |_| {
+            print!("{}", usage());
+            Ok(false)
+        }),
+    ], 1)
 }
 
 fn get_version(docker: &PathBuf) -> String {
@@ -62,31 +63,12 @@ fn run_hello(docker: &PathBuf) -> Result<(), Errors> {
 
 fn command_not_found(cmd: &String) -> Result<(), Errors> {
     println!(
-        "command '{}' not found. Use 
-    dpm --help 
-to check usage",
+        "command '{}' not found. Use \n    dpm --help\nto check usage",
         cmd
     );
     Ok(())
 }
 
-pub fn usage() -> String {
-    str!(
-        "Usage: dpm [OPTIONS] COMMAND [ARGS...]
-
-Docker Package Manager - Manage locally installed programs with Docker containers.
-
-Options:
-  -h, --help     Show this help message and exit.
-  -v, --version  Show the version number and exit.
-
-Commands:
-  install       Install a program as a Docker container.
-  list          List all installed programs.
-  remove        Remove a program and its associated Docker container.
-  update        Update a program's Docker container to the latest version.
-
-all available programs are also considered valid commands
-"
-    )
+pub fn usage() -> &'static str  {
+    include_str!("program_usage.txt")
 }
