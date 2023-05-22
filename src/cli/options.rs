@@ -2,7 +2,6 @@ use std::ops::Range;
 
 use crate::Errors;
 
-
 #[derive(Clone)]
 pub enum ArgLen {
     _Range(Range<usize>),
@@ -11,6 +10,7 @@ pub enum ArgLen {
 
 impl Default for ArgLen {
     fn default() -> Self {
+        // Default argument length is 0
         Self::Usize(0)
     }
 }
@@ -18,14 +18,16 @@ impl Default for ArgLen {
 impl Into<Range<usize>> for ArgLen {
     fn into(self) -> Range<usize> {
         match self {
-            ArgLen::Usize(u) => 0..u,
-            ArgLen::_Range(r) => r,
+            ArgLen::Usize(u) => 0..u, // Convert ArgLen::Usize into a Range starting from 0 and ending at u
+            ArgLen::_Range(r) => r, // Convert ArgLen::_Range directly into a Range
         }
     }
 }
 
 pub struct OptionHandler<'a> {
+    /// List of flags associated with this option handler
     for_flag: Vec<&'static str>,
+    /// Expected argument length for this option handler
     arg_len: ArgLen,
     /// the bool in the return type indicates the continuation of execution:
     /// false means the program needs to terminate
@@ -87,7 +89,7 @@ fn handle_option(
     handler: &OptionHandler,
     start_index: usize,
     args: &Vec<String>,
-    calling_arg: &String
+    calling_arg: &String,
 ) -> Result<Option<usize>, Errors> {
     let fail_on_missing = match handler.arg_len {
         ArgLen::Usize(_) => true,
@@ -95,31 +97,28 @@ fn handle_option(
     };
 
     let range: Range<usize> = handler.arg_len.to_owned().into();
-    let mut options: Vec<&String> = Vec::with_capacity(range.len());
-
-    // collect args
-    for i in range {
-        let arg = args.get(start_index + i);
-        match arg {
-            Some(a) => options.push(a),
-            None => {
-                if fail_on_missing {
-                    // everything of this I hate! 5 levels of indentation ;((
-                    eprintln!("Expected at minimum {} arguments for option {calling_arg}! Got {i}", i + 1);
-                    return Err(Errors::MissingArgument);
-                } else {
-                    break;
-                }
-            }
-        }
-    }
+    let options: Vec<&String> = range.clone()
+        .map(|i| args.get(start_index + i))
+        .take_while(Option::is_some)
+        .map(Option::unwrap)
+        .collect();
 
     let options_len = options.len();
 
-    // call handler function
-    if (handler.handler)(&options)? {
-        return Ok(Some(options_len));
+    if options_len < range.len() && fail_on_missing {
+        eprintln!(
+            "Expected at minimum {} arguments for option {}! Got {}",
+            range.len(),
+            calling_arg,
+            options_len
+        );
+        return Err(Errors::MissingArgument);
     }
 
-    Ok(None)
+    if (handler.handler)(&options)? {
+        Ok(Some(options_len))
+    } else {
+        Ok(None)
+    }
 }
+
