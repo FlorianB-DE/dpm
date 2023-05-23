@@ -9,7 +9,6 @@ edition = "2021"
 config = "0.13.3"
 serde = "1.0.163"
 serde_derive = "1.0.163"
-
-[dependencies.confy]
-features = ["yaml_conf"]
-default-features = false
+confy = { version = "0.5.1", features = [
+    "yaml_conf",
+], default_features = false }
