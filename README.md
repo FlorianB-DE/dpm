@@ -44,8 +44,8 @@ cargo install dpm
 
 ## Contributing
 
-If you would like to contribute to DPM, please feel free to open a pull request or issue on our [GitHub repository](https://github.com/yourusername/dpm). We welcome all contributions, including bug reports, feature requests, and code contributions.
+If you would like to contribute to DPM, please feel free to open a pull request or issue on our [GitHub repository](https://github.com/FlorianB-DE/dpm). We welcome all contributions, including bug reports, feature requests, and code contributions.
 
 ## License
 
-DPM is released under the [MIT License](https://github.com/yourusername/dpm/blob/main/LICENSE).
+DPM is released under the [MIT License](https://github.com/FlorianB-DE/dpm/blob/main/LICENSE).
