@@ -17,7 +17,7 @@ pub enum Errors {
     DockerNotFound,
     /// Error when a command execution fails.
     CommandExecutionFailed,
-    /// Error related to STDIN.
+    /// Error thrown when reading STDIN from spawned process.
     STDINError,
     /// I/O error.
     IOError,
@@ -27,6 +27,10 @@ pub enum Errors {
     UTF8Error,
     /// Error when a required argument is missing.
     MissingArgument,
+    /// Error when loading the configuration File
+    ConfigLoadFailed,
+    /// Error when saving the configuration File
+    ConfigSaveFailed,
 }
 
 fn main() -> Result<(), Errors> {
