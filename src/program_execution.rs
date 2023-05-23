@@ -24,7 +24,7 @@ pub fn string_from_uft8(str: Vec<u8>) -> Result<String, Errors> {
 
 #[inline]
 pub fn print_output(output: Vec<u8>) -> Result<(), Errors> {
-    println!("{}", string_from_uft8(output)?);
+    print!("{}", string_from_uft8(output)?);
     Ok(())
 }
 
