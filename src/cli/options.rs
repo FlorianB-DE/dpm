@@ -41,9 +41,9 @@ impl<'a> OptionHandler<'a> {
         handler: &'a mut dyn Fn(&Vec<&String>) -> Result<bool, Errors>,
     ) -> Self {
         OptionHandler {
-            for_flag: for_flag,
-            arg_len: arg_len,
-            handler: handler,
+            for_flag,
+            arg_len,
+            handler,
         }
     }
 }
