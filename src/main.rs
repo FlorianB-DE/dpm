@@ -3,6 +3,7 @@ mod macros;
 mod cli;
 mod program_execution;
 mod options;
+mod configuration_manager;
 
 use std::{env, path::PathBuf};
 

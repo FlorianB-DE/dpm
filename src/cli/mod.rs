@@ -1,4 +1,3 @@
-mod configuration_manager;
 mod install;
 
 use std::path::PathBuf;
@@ -6,10 +5,8 @@ use std::path::PathBuf;
 use crate::{
     options::{handle_options, OptionHandler},
     program_execution::{exec_cmd, print_output},
-    Errors,
+    Errors, configuration_manager::get_config,
 };
-
-use self::configuration_manager::get_config;
 
 pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     let cmd = match args.get(cmd_index) {
