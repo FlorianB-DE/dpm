@@ -1,12 +1,18 @@
 use std::{cell::RefCell, collections::HashMap, path::PathBuf};
 
 use crate::{
+    configuration_manager::AppConfig,
     option_manager::{handle_options, ArgLen, OptionHandler},
     program_execution::{exec_cmd, print_output},
     Errors,
 };
 
-pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
+pub fn run(
+    args: &Vec<String>,
+    cmd_index: usize,
+    docker: &PathBuf,
+    config: &mut AppConfig,
+) -> Result<(), Errors> {
     // Create a RefCell to hold the collected options
     let collected_options: RefCell<HashMap<&str, String>> = RefCell::new(HashMap::new());
 
@@ -43,9 +49,17 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
         None => return Ok(()),
     };
 
+    // if !is_root::is_root() {
+    //     println!("dpm needs root access to place a script in /usr/local/bin to execute");
+    //     return Err(Errors::InsufficientRights);
+    // }
+
     // Calculate the index of the program argument
     let program_indices = cmd_index + added_index;
-    let program = args.get(program_indices).ok_or_else(missing_program)?;
+    let program = args
+        .get(program_indices)
+        .ok_or_else(missing_program)?
+        .to_owned();
 
     // Retrieve the value of the "tag" option from the collected options
     // If not present, default to "latest"
@@ -55,12 +69,42 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
         .and_then(|f| Some(f.to_owned()))
         .unwrap_or(str!("latest"));
 
+    let mut installed_tags = vec![tag.clone()];
+
     // Format the program with the tag
-    let program = format!("{}:{}", program, tag);
+    let program_with_tag = format!("{}:{}", &program, &tag);
+
+    if let Some(p) = config.installed_programs.get(&program) {
+        if p.contains(&tag) {
+            println!("{program_with_tag} is already installed");
+            return Ok(());
+        }
+
+        installed_tags.append(p.clone().as_mut());
+    }
 
     // Execute the Docker command to pull the specified program
-    let pull = exec_cmd(docker, vec![str!("pull"), program])?;
-    print_output(pull.stdout)
+    let pull = exec_cmd(docker, vec![str!("pull"), program_with_tag.clone()])?;
+
+    config.installed_programs.insert(program, installed_tags);
+
+    let code = match pull.status.code() {
+        Some(c) => c,
+        None => {
+            eprintln!("Docker terminated by signal");
+            return Err(Errors::CommandExecutionFailed);
+        }
+    };
+
+    if code == 0 {
+        print_output(pull.stdout)?;
+        println!("successfully installed {program_with_tag}");
+        return Ok(());
+    }
+
+    eprintln!("Docker exited with code: {code}");
+    print_output(pull.stderr)?;
+    return Err(Errors::CommandExecutionFailed);
 }
 
 fn missing_program() -> Errors {

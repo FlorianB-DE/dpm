@@ -17,8 +17,10 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
         }
     };
 
+    let mut config = get_config()?;
+
     match cmd.as_str() {
-        "install" => install::run(args, cmd_index + 1, docker),
+        "install" => install::run(args, cmd_index + 1, docker, &mut config),
         "hello" => run_hello(docker),
         _ => command_not_found(cmd),
     }
@@ -61,11 +63,6 @@ fn get_version(docker: &PathBuf) -> String {
 
 fn run_hello(docker: &PathBuf) -> Result<(), Errors> {
     let docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
-    let mut config = get_config()?;
-    config.installed_programs.insert(
-        str!("test"),
-        vec![docker_output.status.code().unwrap().to_string()],
-    );
     print_output(docker_output.stdout)?;
     Ok(())
 }
