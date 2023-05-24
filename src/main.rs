@@ -33,6 +33,7 @@ pub enum Errors {
     ConfigLoadFailed,
     /// Error when saving the configuration File
     ConfigSaveFailed,
+    InsufficientRights,
 }
 
 fn main() -> Result<(), Errors> {
