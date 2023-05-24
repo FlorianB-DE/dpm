@@ -14,7 +14,6 @@ pub struct AppConfig {
 impl Drop for AppConfig {
     fn drop(&mut self) {
         let result = confy::store("dpm", "settings", self);
-        println!("saving config");
         if result.is_err() {
             // can not panic
             eprintln!("Could not save config file: {}", result.unwrap_err());
