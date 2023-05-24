@@ -1,11 +1,10 @@
 use std::{cell::RefCell, collections::HashMap, path::PathBuf};
 
 use crate::{
+    option_manager::{handle_options, ArgLen, OptionHandler},
     program_execution::{exec_cmd, print_output},
     Errors,
 };
-
-use crate::options::{handle_options, ArgLen, OptionHandler};
 
 pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     // Create a RefCell to hold the collected options

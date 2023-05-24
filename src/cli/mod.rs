@@ -3,7 +3,7 @@ mod install;
 use std::path::PathBuf;
 
 use crate::{
-    options::{handle_options, OptionHandler},
+    option_manager::{handle_options, OptionHandler},
     program_execution::{exec_cmd, print_output},
     Errors, configuration_manager::get_config,
 };
