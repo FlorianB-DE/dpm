@@ -5,7 +5,7 @@ use crate::{
     Errors,
 };
 
-use super::options::{handle_options, ArgLen, OptionHandler};
+use crate::options::{handle_options, ArgLen, OptionHandler};
 
 pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     // Create a RefCell to hold the collected options

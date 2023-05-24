@@ -2,6 +2,7 @@
 mod macros;
 mod cli;
 mod program_execution;
+mod options;
 
 use std::{env, path::PathBuf};
 

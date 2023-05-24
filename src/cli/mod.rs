@@ -1,15 +1,15 @@
-mod install;
-mod options;
 mod configuration_manager;
+mod install;
 
 use std::path::PathBuf;
 
 use crate::{
+    options::{handle_options, OptionHandler},
     program_execution::{exec_cmd, print_output},
-    Errors
+    Errors,
 };
 
-use self::options::{handle_options, OptionHandler};
+use self::configuration_manager::get_config;
 
 pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
     let cmd = match args.get(cmd_index) {
@@ -29,18 +29,24 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
 
 /// returns None when the program should exit
 pub fn filter_options(args: &Vec<String>, docker: &PathBuf) -> Result<Option<usize>, Errors> {
-    let version_print = get_version(docker);
-
-    handle_options(args, &vec![
-        OptionHandler::new(vec!["-v", "--version"], Default::default(), &mut move |_| {
-            print!("{}", version_print);
-            Ok(false)
-        }),
-        OptionHandler::new(vec!["-h", "--help"], Default::default(), &mut |_| {
-            print!("{}", usage());
-            Ok(false)
-        }),
-    ], 1)
+    handle_options(
+        args,
+        &vec![
+            OptionHandler::new(
+                vec!["-v", "--version"],
+                Default::default(),
+                &mut move |_| {
+                    println!("{}", get_version(docker));
+                    Ok(false)
+                },
+            ),
+            OptionHandler::new(vec!["-h", "--help"], Default::default(), &mut |_| {
+                println!("{}", usage());
+                Ok(false)
+            }),
+        ],
+        1,
+    )
 }
 
 fn get_version(docker: &PathBuf) -> String {
@@ -58,6 +64,11 @@ fn get_version(docker: &PathBuf) -> String {
 
 fn run_hello(docker: &PathBuf) -> Result<(), Errors> {
     let docker_output = exec_cmd(&docker, vec![str!("run"), str!("hello-world")])?;
+    let mut config = get_config()?;
+    config.installed_programs.insert(
+        str!("test"),
+        vec![docker_output.status.code().unwrap().to_string()],
+    );
     print_output(docker_output.stdout)?;
     Ok(())
 }
@@ -70,6 +81,6 @@ fn command_not_found(cmd: &String) -> Result<(), Errors> {
     Ok(())
 }
 
-pub fn usage() -> &'static str  {
+pub fn usage() -> &'static str {
     include_str!("program_usage.txt")
 }
