@@ -5,6 +5,8 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::Errors;
 
+static CONFIG_NAME: &'static str = "settings";
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppConfig {
     pub version: String,
@@ -13,7 +15,7 @@ pub struct AppConfig {
 
 impl Drop for AppConfig {
     fn drop(&mut self) {
-        let result = confy::store("dpm", "settings", self);
+        let result = confy::store(env!("CARGO_PKG_NAME"), CONFIG_NAME, self);
         if result.is_err() {
             // can not panic
             eprintln!("Could not save config file: {}", result.unwrap_err());
