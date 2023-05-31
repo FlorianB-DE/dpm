@@ -4,6 +4,7 @@ mod cli;
 mod program_execution;
 mod option_manager;
 mod configuration_manager;
+mod sources;
 
 use std::{env, path::PathBuf};
 
@@ -34,6 +35,11 @@ pub enum Errors {
     /// Error when saving the configuration File
     ConfigSaveFailed,
     InsufficientRights,
+    HTTPRequestFailed,
+    SavingSourcesFileFailed,
+    CouldNotOpenSourceFile,
+    ProgramNotFound,
+    TestError,
 }
 
 fn main() -> Result<(), Errors> {

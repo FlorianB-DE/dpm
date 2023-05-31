@@ -4,6 +4,7 @@ use crate::{
     configuration_manager::AppConfig,
     option_manager::{handle_options, ArgLen, OptionHandler},
     program_execution::{exec_cmd, print_output},
+    sources::get_program_image,
     Errors,
 };
 
@@ -60,6 +61,8 @@ pub fn run(
         .get(program_indices)
         .ok_or_else(missing_program)?
         .to_owned();
+
+    let program = get_program_image(program)?;
 
     // Retrieve the value of the "tag" option from the collected options
     // If not present, default to "latest"
