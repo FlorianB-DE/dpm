@@ -1,15 +1,15 @@
 #[macro_use]
 mod macros;
 mod cli;
-mod program_execution;
-mod option_manager;
 mod configuration_manager;
+mod option_manager;
+mod program_execution;
 mod sources;
 
 use std::{env, path::PathBuf};
 
-use program_execution::{exec_shell_cmd, string_from_uft8};
 use cli::{filter_options, usage};
+use program_execution::{exec_shell_cmd, string_from_uft8};
 
 /// Represents the possible errors that can occur in the program.
 #[derive(Debug)]
@@ -60,7 +60,7 @@ fn main() -> Result<(), Errors> {
     // When `filter_options` returns `None`, the program should exit.
     let args_added_indices = match filter_options(&args, &docker) {
         Ok(p) => match p {
-            Some(u) => u, // OptionHandler returned Some, indicating continuation.
+            Some(u) => u,          // OptionHandler returned Some, indicating continuation.
             None => return Ok(()), // OptionHandler returned None, indicating program exit.
         },
         Err(_) => {

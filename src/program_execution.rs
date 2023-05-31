@@ -1,4 +1,7 @@
-use std::{ffi, io, process::{self, Stdio}};
+use std::{
+    ffi, io,
+    process::{self, Stdio},
+};
 
 use crate::Errors;
 
@@ -12,7 +15,11 @@ where
     S: AsRef<ffi::OsStr>,
 {
     let out = Stdio::piped();
-    match process::Command::new(&program).stdout(out).args(args).output() {
+    match process::Command::new(&program)
+        .stdout(out)
+        .args(args)
+        .output()
+    {
         Ok(o) => Ok(o),
         Err(e) => print_error(&program, e),
     }

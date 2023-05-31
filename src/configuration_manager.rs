@@ -32,9 +32,9 @@ impl Default for AppConfig {
     }
 }
 
-/// ATTENTION! 
-/// 
-/// Having multiple calls to this function may lead to data loss due to the 
+/// ATTENTION!
+///
+/// Having multiple calls to this function may lead to data loss due to the
 /// config getting saved to file once it's droped.
 pub fn get_config() -> Result<AppConfig, Errors> {
     load::<AppConfig>("dpm", "settings").or_else(|e| {

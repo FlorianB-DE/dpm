@@ -19,7 +19,7 @@ impl Into<Range<usize>> for ArgLen {
     fn into(self) -> Range<usize> {
         match self {
             ArgLen::Usize(u) => 0..u, // Convert ArgLen::Usize into a Range starting from 0 and ending at u
-            ArgLen::_Range(r) => r, // Convert ArgLen::_Range directly into a Range
+            ArgLen::_Range(r) => r,   // Convert ArgLen::_Range directly into a Range
         }
     }
 }
@@ -97,7 +97,8 @@ fn handle_option(
     };
 
     let range: Range<usize> = handler.arg_len.to_owned().into();
-    let options: Vec<&String> = range.clone()
+    let options: Vec<&String> = range
+        .clone()
         .map(|i| args.get(start_index + i))
         .take_while(Option::is_some)
         .map(Option::unwrap)
@@ -121,4 +122,3 @@ fn handle_option(
         Ok(None)
     }
 }
-
