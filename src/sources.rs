@@ -26,10 +26,13 @@ type SourcesFile = HashMap<String, HashMap<String, Program>>;
 pub fn get_program_image(program: String) -> Result<String, Errors> {
     let sources = load_file()?;
 
-    find_image_path(program, sources).ok_or(Errors::ProgramNotFound)
+    find_image_path(&program, sources).ok_or_else(|| {
+        eprintln!("Program {program} not found! Consider updating the sources file with:\n\tdpm update");
+        Errors::ProgramNotFound
+    })
 }
 
-fn find_image_path(program: String, sources: SourcesFile) -> Option<String> {
+fn find_image_path(program: &String, sources: SourcesFile) -> Option<String> {
     for (source, programs) in &sources {
         for (program_name, program_struct) in programs {
             if !program_struct.commands.contains(&program) {
@@ -51,6 +54,7 @@ fn load_file() -> Result<SourcesFile, Errors> {
     let path = confy::get_configuration_file_path(env!("CARGO_PKG_NAME"), SOURCE_FILE_NAME)
         .or(Err(Errors::IOError))?;
     if !path.exists() {
+        println!("no source file found at {}", path.display());
         write(&path, fetch_source_from_remote()?).or_else(|e| {
             eprintln!("{}", e);
             Err(Errors::SavingSourcesFileFailed)
@@ -64,12 +68,10 @@ fn load_file() -> Result<SourcesFile, Errors> {
 }
 
 fn fetch_source_from_remote() -> Result<String, Errors> {
-    let resp = match reqwest::blocking::get(SOURCE_FILE_REMOTE) {
-        Ok(r) => r,
-        Err(e) => {
-            eprintln!("{}", e);
-            return Err(Errors::HTTPRequestFailed);
-        }
-    };
+    println!("downloading source from {SOURCE_FILE_REMOTE}");
+    let resp = reqwest::blocking::get(SOURCE_FILE_REMOTE).or_else(|e| {
+        eprintln!("{e}");
+        return Err(Errors::HTTPRequestFailed);
+    })?;
     resp.text().or(Err(Errors::UTF8Error))
 }
