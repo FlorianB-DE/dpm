@@ -1,11 +1,13 @@
 mod install;
+mod update;
 
 use std::path::PathBuf;
 
 use crate::{
+    configuration_manager::get_config,
     option_manager::{handle_options, OptionHandler},
     program_execution::{exec_cmd, print_output},
-    Errors, configuration_manager::get_config,
+    Errors,
 };
 
 pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(), Errors> {
@@ -21,6 +23,7 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
 
     match cmd.as_str() {
         "install" => install::run(args, cmd_index + 1, docker, &mut config),
+        "update" => update::run(),
         "hello" => run_hello(docker),
         _ => command_not_found(cmd),
     }
