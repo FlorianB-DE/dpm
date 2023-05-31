@@ -10,6 +10,6 @@ Commands:
   install       Install a program as a Docker container.
   list          List all installed programs.
   remove        Remove a program and its associated Docker container.
-  update        Update a program's Docker container to the latest version.
+  update        Update program sources list.
 
 all available programs are also considered valid commands
