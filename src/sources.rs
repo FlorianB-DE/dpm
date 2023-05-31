@@ -1,6 +1,6 @@
 use crate::Errors;
 use serde_derive::{Deserialize, Serialize};
-use std::{collections::HashMap, fs::write};
+use std::{collections::HashMap, fs::write, path::PathBuf};
 
 static SOURCE_FILE_REMOTE: &'static str =
     "https://raw.githubusercontent.com/FlorianB-DE/dpm-sources/main/sources.yml";
@@ -27,7 +27,9 @@ pub fn get_program_image(program: String) -> Result<String, Errors> {
     let sources = load_file()?;
 
     find_image_path(&program, sources).ok_or_else(|| {
-        eprintln!("Program {program} not found! Consider updating the sources file with:\n\tdpm update");
+        eprintln!(
+            "Program {program} not found! Consider updating the sources file with:\n\tdpm update"
+        );
         Errors::ProgramNotFound
     })
 }
@@ -55,16 +57,29 @@ fn load_file() -> Result<SourcesFile, Errors> {
         .or(Err(Errors::IOError))?;
     if !path.exists() {
         println!("no source file found at {}", path.display());
-        write(&path, fetch_source_from_remote()?).or_else(|e| {
-            eprintln!("{}", e);
-            Err(Errors::SavingSourcesFileFailed)
-        })?;
+        update_source(Some(&path))?;
     }
 
     confy::load(env!("CARGO_PKG_NAME"), SOURCE_FILE_NAME).or_else(|e| {
         eprintln!("{}", e);
         Err(Errors::ConfigLoadFailed)
     })
+}
+
+pub fn update_source(path: Option<&PathBuf>) -> Result<(), Errors> {
+    // thats some ugly shit
+    write(
+        path.unwrap_or(
+            &confy::get_configuration_file_path(env!("CARGO_PKG_NAME"), SOURCE_FILE_NAME)
+                .or(Err(Errors::IOError))?,
+        ),
+        fetch_source_from_remote()?,
+    )
+    .or_else(|e| {
+        eprintln!("{}", e);
+        Err(Errors::SavingSourcesFileFailed)
+    })?;
+    Ok(())
 }
 
 fn fetch_source_from_remote() -> Result<String, Errors> {
