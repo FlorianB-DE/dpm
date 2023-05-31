@@ -1,0 +1,3 @@
+[submodule "dpm-sources"]
+	path = dpm-sources
+	url = git@github.com:FlorianB-DE/dpm-sources.git
