@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DPM - Docker Package Manager</title>
+  <script type="module" crossorigin src="/assets/index-77fb43c3.js"></script>
+  <link rel="stylesheet" href="/assets/index-ea31d2fd.css">
+</head>
+
+<body>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-center mt-8">DPM - Docker Package Manager</h1>
+    <p class="mt-4">Welcome to DPM, your new way of running programs!</p>
+    <p class="mt-4">DPM (Docker Package Manager) is a Rust-based command-line tool that allows you to replace locally
+      installed programs with a container running that service. It is designed to make it easier to keep track of your
+      installed programs and dependencies.</p>
+    <p class="mt-4">When you only need a program once, you don't have to install a lot of dependencies. Once you remove
+      the image from your system, it's gone entirely.</p>
+    <h2 class="text-2xl font-bold mt-8">Installation</h2>
+    <p class="mt-4">To install DPM, you need to have Rust installed on your system. You can install Rust by following
+      the
+      instructions on the <a href="https://www.rust-lang.org/tools/install" target="_blank"
+        class="text-blue-500 underline">official Rust website</a>.</p>
+    <p class="mt-4">Once Rust is installed, you can install DPM by running the following command:</p>
+    <pre class="mt-4 bg-gray-100 p-2"><code class="text-sm">cargo install dpm</code></pre>
+    <h2 class="text-2xl font-bold mt-8">Usage</h2>
+    <p class="mt-4">To use DPM, you can run the following command:</p>
+    <pre class="mt-4 bg-gray-100 p-2"><code class="text-sm">dpm &lt;command&gt; [&lt;args&gt;]</code></pre>
+    <p class="mt-4">Available commands:</p>
+    <ul class="list-disc pl-8 mt-2">
+      <li><code class="text-sm">install [--image=&lt;name&gt;] [--tag=&lt;tag&gt;]</code> - Install a program using a
+        Docker image.</li>
+      <li><code class="text-sm">list</code> - List installed programs.</li>
+      <li><code class="text-sm">remove &lt;name&gt;</code> - Remove an installed program.</li>
+      <li><code class="text-sm">start &lt;name&gt;</code> - Start a program.</li>
+      <li><code class="text-sm">stop &lt;name&gt;</code> - Stop a running program.</li>
+      <li><code class="text-sm">update &lt;name&gt;</code> - Update an installed program.</li>
+    </ul>
+  </div>
+  
+</body>
+
+</html>
