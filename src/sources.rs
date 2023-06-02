@@ -67,15 +67,11 @@ fn load_file() -> Result<SourcesFile, Errors> {
 }
 
 pub fn update_source(path: Option<&PathBuf>) -> Result<(), Errors> {
-    // thats some ugly shit
-    write(
-        path.unwrap_or(
-            &confy::get_configuration_file_path(env!("CARGO_PKG_NAME"), SOURCE_FILE_NAME)
-                .or(Err(Errors::IOError))?,
-        ),
-        fetch_source_from_remote()?,
-    )
-    .or_else(|e| {
+    let content = fetch_source_from_remote()?;
+    let config_path = confy::get_configuration_file_path(env!("CARGO_PKG_NAME"), SOURCE_FILE_NAME)
+        .or(Err(Errors::IOError))?;
+    println!("writing updated sources list to {}", config_path.display());
+    write(path.unwrap_or(&config_path), content).or_else(|e| {
         eprintln!("{}", e);
         Err(Errors::SavingSourcesFileFailed)
     })?;
