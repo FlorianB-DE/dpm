@@ -1,18 +1,22 @@
 use std::{
-    ffi, io,
+    ffi::{self, OsStr}, io,
     process::{self, Stdio},
 };
 
 use crate::Errors;
 
 #[inline]
-pub fn exec_shell_cmd(cmd: String) -> Result<process::Output, Errors> {
-    exec_cmd("/bin/sh", vec!["-c".to_string(), cmd])
+pub fn exec_shell_cmd<S>(cmd: S) -> Result<process::Output, Errors> where S: AsRef<ffi::OsStr> {
+    let arg = OsStr::new("-c");
+    let cmd = OsStr::new(&cmd);
+    exec_cmd("/bin/sh", [arg, cmd])
 }
 
-pub fn exec_cmd<S>(program: S, args: Vec<String>) -> Result<process::Output, Errors>
+pub fn exec_cmd<S, T, I>(program: S, args: I) -> Result<process::Output, Errors>
 where
     S: AsRef<ffi::OsStr>,
+    I: IntoIterator<Item = T>,
+    T: AsRef<ffi::OsStr>
 {
     let out = Stdio::piped();
     match process::Command::new(&program)

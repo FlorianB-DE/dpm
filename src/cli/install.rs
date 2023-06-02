@@ -62,7 +62,7 @@ pub fn run(
         .ok_or_else(missing_program)?
         .to_owned();
 
-    let program = get_program_image(program)?;
+    let program = get_program_image(&program)?;
 
     // Retrieve the value of the "tag" option from the collected options
     // If not present, default to "latest"
@@ -87,7 +87,7 @@ pub fn run(
     }
 
     // Execute the Docker command to pull the specified program
-    let pull = exec_cmd(docker, vec![str!("pull"), program_with_tag.clone()])?;
+    let pull = exec_cmd(docker, vec!["pull", &program_with_tag])?;
 
     config.installed_programs.insert(program, installed_tags);
 

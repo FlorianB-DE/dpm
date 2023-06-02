@@ -1,5 +1,6 @@
 mod install;
 mod update;
+mod run;
 
 use std::path::PathBuf;
 
@@ -25,6 +26,7 @@ pub fn run(args: &Vec<String>, cmd_index: usize, docker: &PathBuf) -> Result<(),
         "install" => install::run(args, cmd_index + 1, docker, &mut config),
         "update" => update::run(),
         "hello" => run_hello(docker),
+        "run" => run::run(args, cmd_index + 1, docker, &mut config),
         _ => command_not_found(cmd),
     }
 }

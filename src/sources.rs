@@ -23,10 +23,10 @@ impl Default for Program {
 
 type SourcesFile = HashMap<String, HashMap<String, Program>>;
 
-pub fn get_program_image(program: String) -> Result<String, Errors> {
+pub fn get_program_image(program: &String) -> Result<String, Errors> {
     let sources = load_file()?;
 
-    find_image_path(&program, sources).ok_or_else(|| {
+    find_image_path(program, sources).ok_or_else(|| {
         eprintln!(
             "Program {program} not found! Consider updating the sources file with:\n\tdpm update"
         );
