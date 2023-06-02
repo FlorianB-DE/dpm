@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{configuration_manager::AppConfig, Errors, program_execution::exec_cmd};
+use crate::{configuration_manager::AppConfig, program_execution::exec_cmd, Errors};
 
 use super::install;
 

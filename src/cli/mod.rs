@@ -1,6 +1,6 @@
 mod install;
-mod update;
 mod run;
+mod update;
 
 use std::path::PathBuf;
 
