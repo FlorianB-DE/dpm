@@ -13,3 +13,4 @@ confy = { version = "0.5.1", features = [
     "yaml_conf",
 ], default_features = false }
 reqwest = { version = "0.11", features = ["blocking"] }
+users = "0.11.0"
