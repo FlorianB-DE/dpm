@@ -14,9 +14,26 @@ pub fn run(
     docker: &PathBuf,
     config: &mut AppConfig,
 ) -> Result<(), Errors> {
+    let (added_index, options) = match read_options(args, cmd_index)? {
+        Some(p) => p,
+        None => return Ok(()),
+    };
+
+    // Calculate the index of the program argument
+    let program_indices = cmd_index + added_index;
+    let program = args.get(program_indices).ok_or_else(missing_program)?;
+
+    let program = get_program_image(program)?;
+
+    install(program, &options, docker, config)
+}
+
+fn read_options(
+    args: &Vec<String>,
+    cmd_index: usize,
+) -> Result<Option<(usize, HashMap<&str, String>)>, Errors> {
     // Create a RefCell to hold the collected options
     let collected_options: RefCell<HashMap<&str, String>> = RefCell::new(HashMap::new());
-
     // Define a mutable closure for handling the "tag" option
     let mut tag_handler = |list: &Vec<&String>| -> Result<bool, Errors> {
         let mut options_collection_ref = collected_options.borrow_mut();
@@ -47,35 +64,30 @@ pub fn run(
         Err(e)
     })? {
         Some(p) => p,
-        None => return Ok(()),
+        None => return Ok(None),
     };
 
-    // if !is_root::is_root() {
-    //     println!("dpm needs root access to place a script in /usr/local/bin to execute");
-    //     return Err(Errors::InsufficientRights);
-    // }
+    Ok(Some((added_index, collected_options.into_inner())))
+}
 
-    // Calculate the index of the program argument
-    let program_indices = cmd_index + added_index;
-    let program = args
-        .get(program_indices)
-        .ok_or_else(missing_program)?
-        .to_owned();
-
-    let program = get_program_image(&program)?;
-
+pub fn install(
+    program: String,
+    options: &HashMap<&str, String>,
+    docker: &PathBuf,
+    config: &mut AppConfig,
+) -> Result<(), Errors> {
     // Retrieve the value of the "tag" option from the collected options
     // If not present, default to "latest"
-    let tag = collected_options
-        .borrow()
+    let tag = options
         .get("tag")
         .and_then(|f| Some(f.to_owned()))
         .unwrap_or(str!("latest"));
 
+    
     let mut installed_tags = vec![tag.clone()];
 
     // Format the program with the tag
-    let program_with_tag = format!("{}:{}", &program, &tag);
+    let program_with_tag = format!("{}:{}", program, &tag);
 
     if let Some(p) = config.installed_programs.get(&program) {
         if p.contains(&tag) {
@@ -110,7 +122,7 @@ pub fn run(
     return Err(Errors::CommandExecutionFailed);
 }
 
-fn missing_program() -> Errors {
+pub fn missing_program() -> Errors {
     eprintln!("Missing argument 'program'.\n\nUsage:");
     eprintln!("{}", usage());
     Errors::MissingArgument
