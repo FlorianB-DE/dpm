@@ -77,7 +77,7 @@ pub fn handle_options(
             break true;
         };
         if !found_option {
-            println!("Unknown tag: {arg}");
+            println!("Unknown option: {arg}");
             return Err(Errors::InvalidOption);
         }
     }
