@@ -95,7 +95,7 @@ pub fn install(
             return Ok(());
         }
 
-        installed_tags.append(p.clone().as_mut());
+        installed_tags.extend_from_slice(p);
     }
 
     // Execute the Docker command to pull the specified program
