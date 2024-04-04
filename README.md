@@ -2,6 +2,12 @@
 
 [![Build](https://github.com/FlorianB-DE/dpm/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/FlorianB-DE/dpm/actions/workflows/build.yml)
 
+## !Disclaimer!
+
+This is a prototype and there are still issues to be ironed out!
+
+## Intro
+
 This is dpm! Your new way of running programs. 
 
 DPM (Docker Package Manager) is a Rust-based command-line tool that simplifies the management of your installed programs and dependencies by allowing you to run them as Docker containers. 
@@ -34,7 +40,7 @@ To see a list of available programs and their corresponding Docker images, run:
 dpm list
 ```
 
-## Installation
+## Installation (Soon&#8482;)
 
 To install DPM, you will need Rust installed on your system. Once you have Rust installed, you can install DPM using Cargo, Rust's package manager.
 
